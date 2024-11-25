@@ -10,6 +10,6 @@ import (
 
 
 type Client interface {
-	GetForecast(ctx context.Context, query domain.WeatherAPIForecastQuery) (domain.WeatherAPIForecast, error)
+	GetForecast(ctx context.Context, query domain.WeatherAPIDayForecastQuery) (domain.WeatherAPIDayForecast, error)
 }
 

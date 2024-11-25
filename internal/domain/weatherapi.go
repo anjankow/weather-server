@@ -1,10 +1,17 @@
 package domain
 
-type WeatherAPIForecastQuery struct {
-	Longitude string
-	Latitude string
+import (
+	"encoding/json"
+	"time"
+)
+
+type WeatherAPIDayForecastQuery struct {
+	Longitude float64
+	Latitude float64
+	Date time.Time
 }
 
-type WeatherAPIForecast struct {
-    
+type WeatherAPIDayForecast struct {
+	// Data in the raw form  (no manipulation requested)
+    Data json.RawMessage
 }

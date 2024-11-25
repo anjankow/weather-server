@@ -9,6 +9,6 @@ type Mock struct {
 
 }
 
-func (m *Mock) GetForecast(ctx context.Context, query domain.WeatherAPIForecastQuery) (domain.WeatherAPIForecast, error) {
-	return domain.WeatherAPIForecast{}, nil
+func (m *Mock) GetForecast(ctx context.Context, query domain.WeatherAPIDayForecastQuery) (domain.WeatherAPIDayForecast, error) {
+	return domain.WeatherAPIDayForecast{}, nil
 }
