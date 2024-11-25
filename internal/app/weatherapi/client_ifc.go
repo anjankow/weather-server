@@ -2,14 +2,10 @@ package weatherapi
 
 import (
 	"context"
+	"encoding/json"
 	"weather-server/internal/domain"
 )
 
-
-
-
-
 type Client interface {
-	GetForecast(ctx context.Context, query domain.WeatherAPIDayForecastQuery) (domain.WeatherAPIDayForecast, error)
+	GetDayForecast(ctx context.Context, query domain.DayForecastQuery) (json.RawMessage, error)
 }
-

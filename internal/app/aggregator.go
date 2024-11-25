@@ -6,13 +6,13 @@ import (
 )
 
 type Aggregator struct {
-	openMeteo openmeteo.Service
+	openMeteo  openmeteo.Service
 	weatherAPI weatherapi.Service
 }
 
 func NewAggregator(openMeteo openmeteo.Service, weatherAPI weatherapi.Service) Aggregator {
 	return Aggregator{
-		openMeteo: openMeteo,
+		openMeteo:  openMeteo,
 		weatherAPI: weatherAPI,
 	}
 }
