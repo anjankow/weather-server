@@ -1,4 +1,4 @@
-package weatherapiclient_test
+package weatherapi_test
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 	"weather-server/internal/app/weatherapi"
-	weatherapiclient "weather-server/internal/app/weatherapi/weatherapi_client"
 	"weather-server/internal/domain"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +35,7 @@ type Response struct {
 
 func TestGetForecastSuccess(t *testing.T) {
 	t.Skip("Enable to test the real client")
-	client := weatherapiclient.NewClient(apiKey)
+	client := weatherapi.NewClient(apiKey)
 
 	ctx := context.Background()
 	now := time.Now()
@@ -61,5 +60,5 @@ func TestGetForecastSuccess(t *testing.T) {
 }
 
 func TestClientImplements(t *testing.T) {
-	require.Implements(t, (*weatherapi.Client)(nil), new(weatherapiclient.Client))
+	require.Implements(t, (*weatherapi.Client)(nil), new(weatherapi.Client))
 }

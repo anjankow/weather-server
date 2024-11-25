@@ -1,4 +1,4 @@
-package weatherapi
+package app
 
 import (
 	"context"
@@ -10,17 +10,20 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type Service struct {
+type ForecastService struct {
 	client Client
 }
 
-func NewService(client Client) Service {
-	return Service{
+func NewService(client Client) ForecastService {
+	return ForecastService{
 		client: client,
 	}
 }
 
-func (s Service) GetForecast(ctx context.Context, query domain.ForecastQuery) (domain.ForecastResponse, error) {
+func (s ForecastService) GetForecast(ctx context.Context, query domain.ForecastQuery) (domain.DayForecastSlice, error) {
+	if query.NumOfDays <= 0 {
+		return nil, errors.New("invalid number of days")
+	}
 
 	type dayForecast struct {
 		DayNum int
@@ -45,7 +48,7 @@ func (s Service) GetForecast(ctx context.Context, query domain.ForecastQuery) (d
 				return err
 			}
 			if len(resp) == 0 {
-				return errors.New("failed to get weatherapi day forecast: empty body")
+				return errors.New("failed to get a day forecast: empty body")
 			}
 
 			// No failures, add the response to the channel
@@ -58,15 +61,20 @@ func (s Service) GetForecast(ctx context.Context, query domain.ForecastQuery) (d
 	}
 
 	if err := g.Wait(); err != nil {
-		return nil, fmt.Errorf("weatherapi service failed: GetForecast: %w", err)
+		return nil, err
 	}
 
-	ret := make(domain.ForecastResponse, query.NumOfDays)
-	for f := range forecastChan {
+	if len(forecastChan) != query.NumOfDays {
+		return nil, fmt.Errorf("number of received forecasts (%v) is not as requested (%v)", len(forecastChan), query.NumOfDays)
+	}
+
+	dayForecasts := make(domain.DayForecastSlice, query.NumOfDays)
+	for i := 0; i < query.NumOfDays; i++ {
 		// Return the daily forecasts in order
 		// Index 0 is the 1st day
-		ret[f.DayNum-1] = f.DayForecastRaw
+		var f = <-forecastChan
+		dayForecasts[f.DayNum-1] = f.DayForecastRaw
 	}
 
-	return ret, nil
+	return dayForecasts, nil
 }

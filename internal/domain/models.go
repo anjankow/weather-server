@@ -22,7 +22,13 @@ type DayForecastQuery struct {
 }
 
 type DayForecastRaw json.RawMessage
+type DayForecastSlice []DayForecastRaw
 
 // ForecastResponse is an array of weather forecasts for n consequitive days.
 // Index 0 in the array maps to Day1.
-type ForecastResponse []DayForecastRaw
+type ForecastResponse struct {
+	DayForecasts DayForecastSlice
+	APIName      string
+}
+
+type ForecastAggregate []ForecastResponse

@@ -1,4 +1,4 @@
-package weatherapiclient
+package weatherapi
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"weather-server/internal/domain"
 )
+
+const ProviderName = "WeatherAPI"
 
 const baseURL = "https://api.weatherapi.com/v1/"
 
