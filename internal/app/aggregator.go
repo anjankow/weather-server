@@ -2,7 +2,7 @@ package app
 
 import (
 	openmeteo "weather-server/internal/app/open_meteo"
-	weatherapi "weather-server/internal/app/weather_api"
+	"weather-server/internal/app/weatherapi"
 )
 
 type Aggregator struct {
