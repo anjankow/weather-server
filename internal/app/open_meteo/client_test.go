@@ -1,4 +1,4 @@
-package weatherapi_test
+package openmeteo_test
 
 import (
 	"context"
@@ -6,37 +6,26 @@ import (
 	"testing"
 	"time"
 	"weather-server/internal/app"
-	"weather-server/internal/app/weatherapi"
+	openmeteo "weather-server/internal/app/open_meteo"
 	"weather-server/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// Change to a valid value for testing
-const apiKey = "XD"
-
 type Response struct {
-	Location struct {
-		Name    string
-		Country string
-		Lat     float64
-		Lon     float64
-	}
-	Current struct {
-		TempC float64 `json:"temp_c"`
-		TempF float64 `json:"temp_f"`
-	}
-	Forecast struct {
-		ForecastDay []struct {
-			Date string
-		}
+	Latitude  float64
+	Longitude float64
+	Timezone  string
+	Daily     struct {
+		Time        []string
+		Temperature []float64 `json:"temperature_2m_max"`
 	}
 }
 
 func TestGetForecastSuccess(t *testing.T) {
 	t.Skip("Enable to test the real client")
-	client := weatherapi.NewClient(apiKey)
+	client := openmeteo.NewClient()
 
 	ctx := context.Background()
 	now := time.Now()
@@ -53,13 +42,11 @@ func TestGetForecastSuccess(t *testing.T) {
 
 	var resp Response
 	require.NoError(t, json.Unmarshal(forecastRaw, &resp))
-	assert.Equal(t, "Cusco", resp.Location.Name)
-	assert.Equal(t, "Peru", resp.Location.Country)
-	assert.Equal(t, now.Format("2006-01-02"), resp.Forecast.ForecastDay[0].Date)
-	assert.Greater(t, resp.Current.TempF, resp.Current.TempC)
+	assert.Equal(t, now.Format("2006-01-02"), resp.Daily.Time[0])
+	assert.Equal(t, "GMT", resp.Timezone)
 	t.Logf("%+v\n", resp)
 }
 
 func TestClientImplements(t *testing.T) {
-	require.Implements(t, (*app.Client)(nil), new(weatherapi.Client))
+	require.Implements(t, (*app.Client)(nil), new(openmeteo.Client))
 }

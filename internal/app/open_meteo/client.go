@@ -2,19 +2,71 @@ package openmeteo
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"weather-server/internal/domain"
 )
 
 const ProviderName = "OpenMeteo"
 
-type Service struct {
+const baseURL = "https://api.open-meteo.com/v1/"
+
+type Client struct {
 }
 
-func NewService() Service {
-	return Service{}
+func NewClient() Client {
+	return Client{}
 }
 
-// todo
-func (s Service) GetForecast(ctx context.Context, query domain.ForecastQuery) (domain.DayForecastSlice, error) {
-	return nil, nil
+// GetDayForecast gets up to 15 days of forecast
+func (c Client) GetDayForecast(ctx context.Context, query domain.DayForecastQuery) (json.RawMessage, error) {
+	url, err := url.JoinPath(baseURL, "forecast")
+	if err != nil {
+		return json.RawMessage{}, fmt.Errorf("failed to parse openmeteo forecast url: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return json.RawMessage{}, err
+	}
+	// add query params
+	q := req.URL.Query()
+	q.Set("latitude", fmt.Sprintf("%.4f", query.Latitude))
+	q.Set("longitude", fmt.Sprintf("%.4f", query.Longitude))
+	date := query.Day.Format("2006-01-02")
+	q.Set("start_date", date)
+	q.Set("end_date", date)
+	q.Set("daily", "temperature_2m_max")
+	req.URL.RawQuery = q.Encode()
+
+	// do request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return json.RawMessage{}, fmt.Errorf("failed to exec openmeteo req: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// read the response, in case of failure it contains the error details
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return json.RawMessage{}, fmt.Errorf("failed to read openmeteo resp: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		type openmeteoError struct {
+			Reason string
+		}
+
+		var respError openmeteoError
+		if err := json.Unmarshal(body, &respError); err != nil {
+			return json.RawMessage{}, fmt.Errorf("openmeteo failed with status: %s", resp.Status)
+		}
+
+		return json.RawMessage{}, fmt.Errorf("openmeteo request failed: %s", respError.Reason)
+	}
+
+	return body, nil
 }

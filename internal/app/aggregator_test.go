@@ -7,6 +7,8 @@ import (
 	"time"
 	"weather-server/internal/app"
 	"weather-server/internal/app/mock"
+	openmeteo "weather-server/internal/app/open_meteo"
+	"weather-server/internal/app/weatherapi"
 	"weather-server/internal/domain"
 
 	"github.com/stretchr/testify/assert"
@@ -57,4 +59,32 @@ func TestAggregator(t *testing.T) {
 
 	checkForecastData(0)
 	checkForecastData(1)
+}
+
+func TestAggregatorReal(t *testing.T) {
+	t.Skip("Enable to test the real clients")
+
+	weatherAPIKey := "fill me"
+	weatherapiSer := app.NewService(weatherapi.NewClient(weatherAPIKey))
+	openmeteoSer := app.NewService(openmeteo.NewClient())
+
+	aggr := app.NewAggregator().AddService(weatherapi.ProviderName, weatherapiSer).AddService(openmeteo.ProviderName, openmeteoSer)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	numOfDays := 15
+	q := domain.ForecastQuery{
+		Location: domain.Location{
+			Latitude:  -13.52264,
+			Longitude: -71.96734,
+		},
+		FromDay:   time.Now(),
+		NumOfDays: numOfDays,
+	}
+
+	forecast, err := aggr.GetForecast(ctx, q)
+	require.NoError(t, err)
+
+	assert.Len(t, forecast, 2)
 }
