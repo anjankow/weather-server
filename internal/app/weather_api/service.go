@@ -1,0 +1,8 @@
+package weatherapi
+
+type Service struct {
+}
+
+func NewService() Service {
+	return Service{}
+}
