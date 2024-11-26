@@ -23,15 +23,15 @@ func NewClient(apiKey string) Client {
 	return Client{apiKey}
 }
 
-func (c Client) GetDayForecast(ctx context.Context, query domain.DayForecastQuery) (json.RawMessage, error) {
+func (c Client) GetDayForecast(ctx context.Context, query domain.DayForecastQuery) (domain.DayForecastRaw, error) {
 	url, err := url.JoinPath(baseURL, "forecast.json")
 	if err != nil {
-		return json.RawMessage{}, fmt.Errorf("failed to parse weatherapi forecast url: %w", err)
+		return domain.DayForecastRaw{}, fmt.Errorf("failed to parse weatherapi forecast url: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return json.RawMessage{}, err
+		return domain.DayForecastRaw{}, err
 	}
 	// add query params
 	q := req.URL.Query()
@@ -45,22 +45,27 @@ func (c Client) GetDayForecast(ctx context.Context, query domain.DayForecastQuer
 	// do request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return json.RawMessage{}, fmt.Errorf("failed to exec weatherapi req: %w", err)
+		return domain.DayForecastRaw{}, fmt.Errorf("failed to exec weatherapi req: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusForbidden {
-			return json.RawMessage{}, errors.New("invalid weatherapi API key")
+			return domain.DayForecastRaw{}, errors.New("invalid weatherapi API key")
 		}
-		return json.RawMessage{}, fmt.Errorf("weatherapi failed with status: %s", resp.Status)
+		return domain.DayForecastRaw{}, fmt.Errorf("weatherapi failed with status: %s", resp.Status)
 	}
 
 	// read the response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return json.RawMessage{}, fmt.Errorf("failed to read weatherapi resp: %w", err)
+		return domain.DayForecastRaw{}, fmt.Errorf("failed to read weatherapi resp: %w", err)
 	}
 
-	return body, nil
+	var content domain.DayForecastRaw
+	if err := json.Unmarshal(body, &content); err != nil {
+		return domain.DayForecastRaw{}, fmt.Errorf("failed to unmarshal response body: %w", err)
+	}
+
+	return content, nil
 }

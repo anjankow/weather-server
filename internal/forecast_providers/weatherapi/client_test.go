@@ -49,9 +49,11 @@ func TestGetForecastSuccess(t *testing.T) {
 
 	forecastRaw, err := client.GetDayForecast(ctx, q)
 	require.NoError(t, err)
+	marshalled, err := json.Marshal(forecastRaw)
+	require.NoError(t, err)
 
 	var resp Response
-	require.NoError(t, json.Unmarshal(forecastRaw, &resp))
+	require.NoError(t, json.Unmarshal(marshalled, &resp))
 	assert.Equal(t, "Cusco", resp.Location.Name)
 	assert.Equal(t, "Peru", resp.Location.Country)
 	assert.Equal(t, now.Format("2006-01-02"), resp.Forecast.ForecastDay[0].Date)

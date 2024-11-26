@@ -23,6 +23,9 @@ func NewAggregator(
 		return Aggregator{}, errors.New("empty providers set")
 	}
 
+	if numOfDays == 0 {
+		return Aggregator{}, errors.New("invalid number of days")
+	}
 	services := make(map[string]ForecastService, len(forecastProviders))
 	for providerName, provider := range forecastProviders {
 		services[providerName] = NewForecastService(provider)
@@ -30,6 +33,7 @@ func NewAggregator(
 
 	return Aggregator{
 		forecastServices: services,
+		numOfDays:        numOfDays,
 	}, nil
 }
 

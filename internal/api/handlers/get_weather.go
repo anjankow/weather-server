@@ -67,6 +67,6 @@ func GetWeather(app app.App) echo.HandlerFunc {
 			resp[f.APIName] = dayForecastResp
 		}
 
-		return c.JSONPretty(http.StatusOK, resp, "4")
+		return c.JSON(http.StatusOK, resp)
 	}
 }

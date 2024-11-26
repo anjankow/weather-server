@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"weather-server/internal/api/handlers"
 	"weather-server/internal/api/server"
 	"weather-server/internal/app"
 
@@ -13,8 +12,7 @@ import (
 
 func TestGetHealthy(t *testing.T) {
 	mgmtKey := "xxx"
-	s := server.New(server.Config{Debug: true, MgmtKey: mgmtKey})
-	handlers.AttachHandlers(s, app.App{})
+	s := server.New(server.Config{Debug: true, MgmtKey: mgmtKey}, app.App{})
 
 	req := httptest.NewRequest(http.MethodGet, "/-/healthy", nil)
 	req.Header.Add("Authorization", "Bearer "+mgmtKey)
@@ -25,11 +23,9 @@ func TestGetHealthy(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 }
 
-
 func TestGetHealthyUnauthorized(t *testing.T) {
 	mgmtKey := "xxx"
-	s := server.New(server.Config{Debug: true, MgmtKey: mgmtKey})
-	handlers.AttachHandlers(s, app.App{})
+	s := server.New(server.Config{Debug: true, MgmtKey: mgmtKey}, app.App{})
 
 	req := httptest.NewRequest(http.MethodGet, "/-/healthy", nil)
 	req.Header.Add("Authorization", "Bearer "+"invalid")
@@ -39,4 +35,3 @@ func TestGetHealthyUnauthorized(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
 }
-

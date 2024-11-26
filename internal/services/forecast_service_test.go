@@ -2,7 +2,6 @@ package services_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -33,13 +32,15 @@ func TestGetForecastSuccessMultiple(t *testing.T) {
 		NumOfDays: numOfDays,
 	}
 
-	mock.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(numOfDays).Return([]byte{55}, nil)
+	mock.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(numOfDays).Return(domain.DayForecastRaw{"data": 55}, nil)
 
 	forecast, err := service.GetForecast(ctx, q)
 	require.NoError(t, err)
 	require.Len(t, forecast, numOfDays)
 
-	assert.Equal(t, forecast[numOfDays-1], domain.DayForecastRaw(json.RawMessage([]byte{55})))
+	assert.Equal(t, forecast[numOfDays-1], domain.DayForecastRaw{
+		"data": 55,
+	})
 }
 
 func TestGetForecastSuccessOne(t *testing.T) {
@@ -59,13 +60,13 @@ func TestGetForecastSuccessOne(t *testing.T) {
 		NumOfDays: 1,
 	}
 
-	mock.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(1).Return([]byte{55}, nil)
+	mock.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(1).Return(domain.DayForecastRaw{"data": 55}, nil)
 
 	forecast, err := service.GetForecast(ctx, q)
 	require.NoError(t, err)
 	require.Len(t, forecast, 1)
 
-	assert.Equal(t, forecast[0], domain.DayForecastRaw(json.RawMessage([]byte{55})))
+	assert.Equal(t, forecast[0], domain.DayForecastRaw{"data": 55})
 }
 
 func TestGetForecastClientFailure(t *testing.T) {

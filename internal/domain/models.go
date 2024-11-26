@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -26,7 +25,7 @@ type DayForecastQuery struct {
 	Day time.Time
 }
 
-type DayForecastRaw json.RawMessage
+type DayForecastRaw map[string]interface{}
 type DayForecastSlice []DayForecastRaw
 
 // ForecastResponse is an array of weather forecasts for n consequitive days.

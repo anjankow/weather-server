@@ -2,7 +2,6 @@ package services_test
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 	"time"
 	"weather-server/internal/domain"
@@ -43,11 +42,11 @@ func TestAggregator(t *testing.T) {
 	}
 
 	expected := map[string]domain.DayForecastRaw{
-		provider1: domain.DayForecastRaw(json.RawMessage([]byte{55})),
-		provider2: domain.DayForecastRaw(json.RawMessage([]byte{33})),
+		provider1: {"data": 55},
+		provider2: {"data": 33},
 	}
-	mock1.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(numOfDays).Return([]byte(expected[provider1]), nil)
-	mock2.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(numOfDays).Return([]byte(expected[provider2]), nil)
+	mock1.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(numOfDays).Return(expected[provider1], nil)
+	mock2.EXPECT().GetDayForecast(gomock.Any(), gomock.Any()).Times(numOfDays).Return(expected[provider2], nil)
 
 	forecast, err := aggr.GetForecast(ctx, q)
 	require.NoError(t, err)
@@ -55,7 +54,7 @@ func TestAggregator(t *testing.T) {
 	assert.Len(t, forecast, 2)
 	checkForecastData := func(idx int) {
 		expectedForecastData := expected[forecast[idx].APIName]
-		assert.Equal(t, expectedForecastData[0], forecast[idx].DayForecasts[0][0])
+		assert.Equal(t, expectedForecastData, forecast[idx].DayForecasts[0])
 	}
 
 	checkForecastData(0)
