@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"log"
 	"net/http"
@@ -22,6 +23,7 @@ type Config struct {
 	Debug          bool
 	RequestTimeout time.Duration
 	MgmtKey        string
+	ListenAddr string
 }
 
 func New(cfg Config, app app.App) Server {
@@ -32,6 +34,17 @@ func New(cfg Config, app app.App) Server {
 
 	return s
 }
+
+func (s Server) Start() error{
+	log.Default().Println("Server start")
+	return s.Echo.Start(s.Cfg.ListenAddr)
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	log.Default().Println("Server shutdown")
+	return s.Echo.Shutdown(ctx)
+}
+
 
 func newRouter(cfg Config, app app.App) *echo.Echo {
 	e := echo.New()

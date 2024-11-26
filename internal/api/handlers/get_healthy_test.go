@@ -35,3 +35,14 @@ func TestGetHealthyUnauthorized(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
 }
+
+func TestGetHealthyNoKey(t *testing.T) {
+	s := server.New(server.Config{Debug: true}, app.App{})
+
+	req := httptest.NewRequest(http.MethodGet, "/-/healthy", nil)
+
+	res := httptest.NewRecorder()
+	s.Echo.ServeHTTP(res, req)
+
+	assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+}
