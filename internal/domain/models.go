@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const LongitudeMax float64 = 180
+const LongitudeMin float64 = -180
+const LatitudeMax float64 = 90
+const LatitudeMin float64 = -90
+
 type Location struct {
 	Longitude float64
 	Latitude  float64

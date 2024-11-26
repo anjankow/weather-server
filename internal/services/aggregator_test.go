@@ -25,21 +25,21 @@ func TestAggregator(t *testing.T) {
 
 	provider1 := "mock 1"
 	provider2 := "mock 2"
-	aggr, err := services.NewAggregator(map[string]domain.Client{
-		provider1: mock1,
-		provider2: mock2,
-	})
-	require.NoError(t, err)
 
 	ctx := context.Background()
 	numOfDays := 33
-	q := domain.ForecastQuery{
-		Location: domain.Location{
-			Latitude:  -13.52264,
-			Longitude: -71.96734,
-		},
-		FromDay:   time.Now(),
-		NumOfDays: numOfDays,
+
+	aggr, err := services.NewAggregator(
+		numOfDays,
+		map[string]domain.Client{
+			provider1: mock1,
+			provider2: mock2,
+		})
+	require.NoError(t, err)
+
+	q := domain.Location{
+		Latitude:  -13.52264,
+		Longitude: -71.96734,
 	}
 
 	expected := map[string]domain.DayForecastRaw{
@@ -66,23 +66,23 @@ func TestAggregatorReal(t *testing.T) {
 	t.Skip("Enable to test the real clients")
 
 	weatherAPIKey := "fill me"
-	aggr, err := services.NewAggregator(map[string]domain.Client{
-		weatherapi.ProviderName: weatherapi.NewClient(weatherAPIKey),
-		openmeteo.ProviderName: openmeteo.NewClient(),
-	})
-	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	numOfDays := 15
-	q := domain.ForecastQuery{
-		Location: domain.Location{
-			Latitude:  -13.52264,
-			Longitude: -71.96734,
-		},
-		FromDay:   time.Now(),
-		NumOfDays: numOfDays,
+
+	aggr, err := services.NewAggregator(
+		numOfDays,
+		map[string]domain.Client{
+			weatherapi.ProviderName: weatherapi.NewClient(weatherAPIKey),
+			openmeteo.ProviderName:  openmeteo.NewClient(),
+		})
+	require.NoError(t, err)
+
+	q := domain.Location{
+		Latitude:  -13.52264,
+		Longitude: -71.96734,
 	}
 
 	forecast, err := aggr.GetForecast(ctx, q)

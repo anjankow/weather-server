@@ -4,16 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 	"weather-server/internal/domain"
 
 	"golang.org/x/sync/errgroup"
 )
 
 type Aggregator struct {
+	numOfDays        int
 	forecastServices map[string]ForecastService
 }
 
-func NewAggregator(forecastProviders map[string /*provider name*/]domain.Client) (Aggregator,error) {
+func NewAggregator(
+	numOfDays int,
+	forecastProviders map[string] /*provider name*/ domain.Client,
+) (Aggregator, error) {
 	if forecastProviders == nil {
 		return Aggregator{}, errors.New("empty providers set")
 	}
@@ -22,17 +27,22 @@ func NewAggregator(forecastProviders map[string /*provider name*/]domain.Client)
 	for providerName, provider := range forecastProviders {
 		services[providerName] = NewForecastService(provider)
 	}
-	
+
 	return Aggregator{
 		forecastServices: services,
 	}, nil
 }
 
-
-func (a Aggregator) GetForecast(ctx context.Context, query domain.ForecastQuery) (domain.ForecastAggregate, error) {
+func (a Aggregator) GetForecast(ctx context.Context, location domain.Location) (domain.ForecastAggregate, error) {
 
 	forecastsChan := make(chan domain.ForecastResponse, len(a.forecastServices))
 	g, gctx := errgroup.WithContext(ctx)
+
+	query := domain.ForecastQuery{
+		Location:  location,
+		FromDay:   time.Now(),
+		NumOfDays: a.numOfDays,
+	}
 
 	for provider, service := range a.forecastServices {
 		g.Go(func() error {
