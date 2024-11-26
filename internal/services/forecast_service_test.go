@@ -1,4 +1,4 @@
-package app_test
+package services_test
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"errors"
 	"testing"
 	"time"
-	"weather-server/internal/app"
-	"weather-server/internal/app/mock"
 	"weather-server/internal/domain"
+	"weather-server/internal/forecast_providers/mock"
+	"weather-server/internal/services"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,7 +20,7 @@ func TestGetForecastSuccessMultiple(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mock := mock.NewMockClient(mockCtrl)
-	service := app.NewService(mock)
+	service := services.NewForecastService(mock)
 
 	ctx := context.Background()
 	numOfDays := 450
@@ -47,7 +47,7 @@ func TestGetForecastSuccessOne(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mock := mock.NewMockClient(mockCtrl)
-	service := app.NewService(mock)
+	service := services.NewForecastService(mock)
 
 	ctx := context.Background()
 	q := domain.ForecastQuery{
@@ -73,7 +73,7 @@ func TestGetForecastClientFailure(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mock := mock.NewMockClient(mockCtrl)
-	service := app.NewService(mock)
+	service := services.NewForecastService(mock)
 
 	ctx := context.Background()
 	q := domain.ForecastQuery{

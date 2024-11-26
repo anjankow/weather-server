@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
-	"weather-server/internal/app"
-	"weather-server/internal/app/weatherapi"
 	"weather-server/internal/domain"
+	"weather-server/internal/forecast_providers/weatherapi"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -61,5 +60,5 @@ func TestGetForecastSuccess(t *testing.T) {
 }
 
 func TestClientImplements(t *testing.T) {
-	require.Implements(t, (*app.Client)(nil), new(weatherapi.Client))
+	require.Implements(t, (*domain.Client)(nil), new(weatherapi.Client))
 }

@@ -1,4 +1,4 @@
-package app
+package services
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 )
 
 type ForecastService struct {
-	client Client
+	client domain.Client
 }
 
-func NewService(client Client) ForecastService {
+func NewForecastService(client domain.Client) ForecastService {
 	return ForecastService{
 		client: client,
 	}

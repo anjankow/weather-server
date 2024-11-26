@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 	"time"
-	"weather-server/internal/app"
-	openmeteo "weather-server/internal/app/open_meteo"
 	"weather-server/internal/domain"
+	openmeteo "weather-server/internal/forecast_providers/open_meteo"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -48,5 +47,5 @@ func TestGetForecastSuccess(t *testing.T) {
 }
 
 func TestClientImplements(t *testing.T) {
-	require.Implements(t, (*app.Client)(nil), new(openmeteo.Client))
+	require.Implements(t, (*domain.Client)(nil), new(openmeteo.Client))
 }

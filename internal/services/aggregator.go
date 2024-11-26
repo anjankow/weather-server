@@ -1,7 +1,8 @@
-package app
+package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"weather-server/internal/domain"
 
@@ -12,16 +13,21 @@ type Aggregator struct {
 	forecastServices map[string]ForecastService
 }
 
-func NewAggregator() *Aggregator {
-	return &Aggregator{
-		forecastServices: make(map[string]ForecastService),
+func NewAggregator(forecastProviders map[string /*provider name*/]domain.Client) (Aggregator,error) {
+	if forecastProviders == nil {
+		return Aggregator{}, errors.New("empty providers set")
 	}
+
+	services := make(map[string]ForecastService, len(forecastProviders))
+	for providerName, provider := range forecastProviders {
+		services[providerName] = NewForecastService(provider)
+	}
+	
+	return Aggregator{
+		forecastServices: services,
+	}, nil
 }
 
-func (a *Aggregator) AddService(providerName string, service ForecastService) *Aggregator {
-	a.forecastServices[providerName] = service
-	return a
-}
 
 func (a Aggregator) GetForecast(ctx context.Context, query domain.ForecastQuery) (domain.ForecastAggregate, error) {
 

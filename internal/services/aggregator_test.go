@@ -1,15 +1,15 @@
-package app_test
+package services_test
 
 import (
 	"context"
 	"encoding/json"
 	"testing"
 	"time"
-	"weather-server/internal/app"
-	"weather-server/internal/app/mock"
-	openmeteo "weather-server/internal/app/open_meteo"
-	"weather-server/internal/app/weatherapi"
 	"weather-server/internal/domain"
+	"weather-server/internal/forecast_providers/mock"
+	openmeteo "weather-server/internal/forecast_providers/open_meteo"
+	"weather-server/internal/forecast_providers/weatherapi"
+	"weather-server/internal/services"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,14 +21,15 @@ func TestAggregator(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mock1 := mock.NewMockClient(mockCtrl)
-	service1 := app.NewService(mock1)
-
 	mock2 := mock.NewMockClient(mockCtrl)
-	service2 := app.NewService(mock2)
 
 	provider1 := "mock 1"
 	provider2 := "mock 2"
-	aggr := app.NewAggregator().AddService(provider1, service1).AddService(provider2, service2)
+	aggr, err := services.NewAggregator(map[string]domain.Client{
+		provider1: mock1,
+		provider2: mock2,
+	})
+	require.NoError(t, err)
 
 	ctx := context.Background()
 	numOfDays := 33
@@ -65,10 +66,11 @@ func TestAggregatorReal(t *testing.T) {
 	t.Skip("Enable to test the real clients")
 
 	weatherAPIKey := "fill me"
-	weatherapiSer := app.NewService(weatherapi.NewClient(weatherAPIKey))
-	openmeteoSer := app.NewService(openmeteo.NewClient())
-
-	aggr := app.NewAggregator().AddService(weatherapi.ProviderName, weatherapiSer).AddService(openmeteo.ProviderName, openmeteoSer)
+	aggr, err := services.NewAggregator(map[string]domain.Client{
+		weatherapi.ProviderName: weatherapi.NewClient(weatherAPIKey),
+		openmeteo.ProviderName: openmeteo.NewClient(),
+	})
+	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
