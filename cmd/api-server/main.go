@@ -47,7 +47,7 @@ func main() {
 	// run the server
 	server := server.New(
 		server.Config{
-			Debug: false,
+			Debug:      false,
 			ListenAddr: ":8099",
 		},
 		app,

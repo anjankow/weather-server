@@ -45,9 +45,9 @@ func TestGetWeatherOneProvider(t *testing.T) {
 		"mock1": mock,
 	})
 
-	res := MakeRequest(t, s, "/weather")
+	res := MakeRequest(t, s, "/weather?longitude=33&latitude=22")
 
-	assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+	require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
@@ -128,9 +128,9 @@ func TestGetWeatherMultipleProviders(t *testing.T) {
 		"mock3": mock3,
 	})
 
-	res := MakeRequest(t, s, "/weather")
+	res := MakeRequest(t, s, "/weather?longitude=33&latitude=22")
 
-	assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+	require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
@@ -171,6 +171,48 @@ func TestGetWeatherMultipleProviders(t *testing.T) {
 		require.NoError(t, json.Unmarshal(day1, &forecast))
 		assert.Equal(t, "perfect", forecast.Comment)
 	}
+}
+
+func TestGetWeatherMissingParams(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mock := mock.NewMockClient(mockCtrl)
+
+	numOfDays := 4
+
+	s := NewTestServer(t, numOfDays, map[string]domain.Client{
+		"mock1": mock,
+	})
+
+	res := MakeRequest(t, s, "/weather")
+
+	assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+
+	body, err := io.ReadAll(res.Body)
+	require.NoError(t, err)
+
+	t.Log(string(body))
+}
+
+func TestGetWeatherInvalidParams(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mock := mock.NewMockClient(mockCtrl)
+
+	numOfDays := 4
+
+	s := NewTestServer(t, numOfDays, map[string]domain.Client{
+		"mock1": mock,
+	})
+
+	res := MakeRequest(t, s, "/weather?longitude=181&latitude=77")
+
+	assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+
+	body, err := io.ReadAll(res.Body)
+	require.NoError(t, err)
+
+	t.Log(string(body))
 }
 
 func MakeRequest(t *testing.T, s server.Server, url string) *httptest.ResponseRecorder {

@@ -16,26 +16,26 @@ func GetWeather(app app.App) echo.HandlerFunc {
 
 		// get and validate the query params
 		var params = struct {
-			Latitude  float64
-			Longitude float64
+			Latitude  *float64 `query:"latitude"`
+			Longitude *float64 `query:"longitude"`
 		}{}
 		binder := c.Echo().Binder.(*echo.DefaultBinder)
 		if err := binder.BindQueryParams(c, &params); err != nil {
 			return httperrors.NewValidationError(err.Error())
 		}
 
-		if params.Longitude > domain.LongitudeMax || params.Longitude < domain.LongitudeMin {
+		if params.Longitude == nil || *params.Longitude > domain.LongitudeMax || *params.Longitude < domain.LongitudeMin {
 			return httperrors.NewValidationError("invalid longitude value")
 		}
 
-		if params.Latitude > domain.LatitudeMax || params.Latitude < domain.LatitudeMin {
+		if params.Latitude == nil || *params.Latitude > domain.LatitudeMax || *params.Latitude < domain.LatitudeMin {
 			return httperrors.NewValidationError("invalid latitude value")
 		}
 
 		// map the params to the domain objects
 		location := domain.Location{
-			Longitude: params.Longitude,
-			Latitude:  params.Latitude,
+			Longitude: *params.Longitude,
+			Latitude:  *params.Latitude,
 		}
 		// call the respective app service
 		forecast, err := app.Aggregator.GetForecast(ctx, location)

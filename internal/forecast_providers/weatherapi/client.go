@@ -49,17 +49,29 @@ func (c Client) GetDayForecast(ctx context.Context, query domain.DayForecastQuer
 	}
 	defer resp.Body.Close()
 
+	// read the response, in case of failure it contains the error details
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return domain.DayForecastRaw{}, fmt.Errorf("failed to read weatherapi resp: %w", err)
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusForbidden {
 			return domain.DayForecastRaw{}, errors.New("invalid weatherapi API key")
 		}
-		return domain.DayForecastRaw{}, fmt.Errorf("weatherapi failed with status: %s", resp.Status)
-	}
 
-	// read the response
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return domain.DayForecastRaw{}, fmt.Errorf("failed to read weatherapi resp: %w", err)
+		type weatherapiError struct {
+			Error struct {
+				Message string
+			}
+		}
+
+		var respError weatherapiError
+		if err := json.Unmarshal(body, &respError); err != nil {
+			return domain.DayForecastRaw{}, fmt.Errorf("weatherapi failed with status: %s", resp.Status)
+		}
+
+		return domain.DayForecastRaw{}, fmt.Errorf("weatherapi request failed: %s", respError.Error.Message)
 	}
 
 	var content domain.DayForecastRaw
